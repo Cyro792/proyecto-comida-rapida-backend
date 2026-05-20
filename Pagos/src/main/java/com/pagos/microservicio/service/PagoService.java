@@ -37,4 +37,11 @@ public class PagoService {
 
         return pagoGuardado;
     }
+    public java.util.List<Pago> obtenerTodos() {
+        log.info("Recuperando el historial completo de pagos desde la base de datos...");
+        return pagoRepository.findAll();
+    }
+
+
+
 }

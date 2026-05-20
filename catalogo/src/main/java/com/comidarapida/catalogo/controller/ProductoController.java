@@ -3,6 +3,7 @@ package com.comidarapida.catalogo.controller;
 import com.comidarapida.catalogo.dto.ProductoDTO;
 import com.comidarapida.catalogo.dto.UsuarioResponseDTO;
 import com.comidarapida.catalogo.service.ProductoService;
+import com.comidarapida.catalogo.client.PagoClient; // <-- Importamos tu nuevo cliente Feign
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -11,6 +12,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map; // <-- Importamos Map correctamente arriba
 
 @RestController
 @RequestMapping("/api/productos")
@@ -19,6 +21,7 @@ import java.util.List;
 public class ProductoController {
 
     private final ProductoService productoService;
+    private final PagoClient pagoClient; // <-- Inyectado limpiamente junto al servicio
 
     @GetMapping("/integracion-inventario")
     public ResponseEntity<List<Object>> probarConexionInventario() {
@@ -61,4 +64,23 @@ public class ProductoController {
         UsuarioResponseDTO usuarioEncontrado = productoService.probarConexionConUsuarios(idUsuario);
         return ResponseEntity.ok(usuarioEncontrado);
     }
+
+
+    @PostMapping("/comprar")
+    public ResponseEntity<Object> simularCompra(@RequestBody Map<String, Object> requestPago) {
+        log.info("Catálogo redirigiendo el pago al microservicio de Brandon...");
+        Object respuestaPago = pagoClient.procesarPago(requestPago);
+        return ResponseEntity.ok(respuestaPago);
+    }
+
+    @GetMapping("/historial-pagos")
+    public ResponseEntity<List<Object>> verHistorialDePagos() {
+        log.info("Catálogo solicitando el historial completo de pagos a Brandon...");
+        // Usamos el cliente para viajar por red y traer la lista
+        List<Object> historial = pagoClient.obtenerHistorialPagos();
+        return ResponseEntity.ok(historial);
+    }
+
+
+
 }
