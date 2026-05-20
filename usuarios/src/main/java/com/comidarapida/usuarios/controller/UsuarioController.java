@@ -1,8 +1,6 @@
 package com.comidarapida.usuarios.controller;
 
-
 import com.comidarapida.usuarios.dto.UsuarioDTO;
-import com.comidarapida.usuarios.model.Usuario;
 import com.comidarapida.usuarios.service.UsuarioService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -25,15 +23,20 @@ public class UsuarioController {
     public ResponseEntity<UsuarioDTO> crearUsuario(@Valid @RequestBody UsuarioDTO usuarioDTO){
         log.info("Recibiendo petición para crear usuario con email: {}",usuarioDTO.getEmail());
 
-        Usuario entidadUsuario = new Usuario();
-        entidadUsuario.setNombre(usuarioDTO.getNombre());
-        entidadUsuario.setEmail(usuarioDTO.getEmail());
-        entidadUsuario.setPassword(usuarioDTO.getPassword());
-        entidadUsuario.setRol(usuarioDTO.getRol());
+        // El Controlador no transforma nada, solo delega al Servicio
+        UsuarioDTO nuevoUsuario = usuarioService.crearUsuario(usuarioDTO);
 
-        UsuarioDTO nuevoUsuario = usuarioService.crearUsuario(entidadUsuario);
         log.info("Usuario creado exitosamente con ID: {}",nuevoUsuario.getId());
         return new ResponseEntity<>(nuevoUsuario, HttpStatus.CREATED);
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> eliminarUsuario(@PathVariable Long id){
+        log.info("Recibiendo petición para eliminar usuario con ID: {}", id);
+        usuarioService.eliminarUsuario(id);
+
+        // Retornamos 204 No Content, que es el estándar profesional cuando se elimina algo con éxito
+        return ResponseEntity.noContent().build();
     }
 
     @GetMapping
@@ -48,13 +51,11 @@ public class UsuarioController {
         return usuarioService.buscarPorId(id)
                 .map(ResponseEntity::ok)
                 .orElseGet(() -> {
-                    // Si no lo encuentra, dejamos un rastro tipo "Advertencia" antes de devolver el 404
                     log.warn("No se encontró ningún usuario con el ID: {}", id);
                     return ResponseEntity.notFound().build();
                 });
-        }
     }
-
+}
 
 
 

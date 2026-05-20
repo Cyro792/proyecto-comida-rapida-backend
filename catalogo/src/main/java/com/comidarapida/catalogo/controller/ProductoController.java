@@ -1,6 +1,7 @@
 package com.comidarapida.catalogo.controller;
 
 import com.comidarapida.catalogo.dto.ProductoDTO;
+import com.comidarapida.catalogo.dto.UsuarioResponseDTO;
 import com.comidarapida.catalogo.service.ProductoService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -18,6 +19,11 @@ import java.util.List;
 public class ProductoController {
 
     private final ProductoService productoService;
+
+    @GetMapping("/integracion-inventario")
+    public ResponseEntity<List<Object>> probarConexionInventario() {
+        return ResponseEntity.ok(productoService.traerInventario());
+    }
 
     @GetMapping
     public ResponseEntity<List<ProductoDTO>> listarProducto(){
@@ -46,6 +52,13 @@ public class ProductoController {
         log.warn("Recibiendo petición para eliminar el producto con ID: {}", id);
         productoService.eliminarProducto(id);
         log.info("Producto eliminado exitosamente con ID: {}", id);
-        return ResponseEntity.noContent().build(); // HTTP 204 No Content es ideal para deletes
+        return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/prueba-feign/{idUsuario}")
+    public ResponseEntity<UsuarioResponseDTO> probarFeign(@PathVariable Long idUsuario){
+        log.info("Catálogo está intentando comunicarse con Usuarios para buscar el ID: {}", idUsuario);
+        UsuarioResponseDTO usuarioEncontrado = productoService.probarConexionConUsuarios(idUsuario);
+        return ResponseEntity.ok(usuarioEncontrado);
     }
 }

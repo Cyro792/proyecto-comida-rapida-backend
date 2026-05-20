@@ -1,18 +1,39 @@
 package com.comidarapida.catalogo.service;
 
+import com.comidarapida.catalogo.client.InventarioClient;
 import com.comidarapida.catalogo.dto.ProductoDTO;
+import com.comidarapida.catalogo.dto.UsuarioResponseDTO;
 import com.comidarapida.catalogo.model.Producto;
 import com.comidarapida.catalogo.repository.ProductoRepository;
+import com.comidarapida.catalogo.client.UsuarioClient;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
 @Service
-@RequiredArgsConstructor // Usamos la forma moderna, igual que en Usuarios
+@RequiredArgsConstructor
 public class ProductoService {
 
     private final ProductoRepository productoRepository;
+    private final UsuarioClient usuarioClient;
+
+
+    public UsuarioResponseDTO probarConexionConUsuarios(Long idUsuario){
+        UsuarioResponseDTO usuario = usuarioClient.obtenerUsuarioPorId(idUsuario);
+        System.out.println("Catálogo encontró al usuario: " + usuario.getNombre());
+
+        return usuario;
+    }
+
+    @Autowired
+    private InventarioClient inventarioClient; // Tu nuevo puente al puerto 8083
+
+
+    public List<Object> traerInventario() {
+        return inventarioClient.obtenerProductosDelInventario().getBody();
+    }
 
     public List<ProductoDTO> obtenerTodos(){
         List<Producto> productos = productoRepository.findAll();
@@ -31,7 +52,7 @@ public class ProductoService {
 
     private ProductoDTO convertirADTO(Producto producto){
         ProductoDTO dto = new ProductoDTO();
-        dto.setIdProducto(producto.getIdProducto()); // Agregamos el ID al mapeo
+        dto.setIdProducto(producto.getIdProducto());
         dto.setNombre(producto.getNombre());
         dto.setDescripcion(producto.getDescripcion());
         dto.setPrecio(producto.getPrecio());
